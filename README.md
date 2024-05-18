@@ -1,0 +1,72 @@
+## Kratos
+
+Async (based on amphp) PHP client for Apache Kafka. Now it is under heavy development.
+
+### Implemented API:
+- [ ] Produce
+- [ ] Fetch
+- [ ] ListOffsets
+- [x] Metadata
+- [ ] LeaderAndIsr
+- [ ] StopReplica
+- [ ] UpdateMetadata
+- [ ] ControlledShutdown
+- [ ] OffsetCommit
+- [ ] OffsetFetch
+- [ ] FindCoordinator
+- [ ] JoinGroup
+- [ ] Heartbeat
+- [ ] LeaveGroup
+- [ ] SyncGroup
+- [ ] DescribeGroups
+- [ ] ListGroups
+- [ ] SaslHandshake
+- [x] ApiVersions
+- [ ] CreateTopics
+- [ ] DeleteTopics
+- [ ] DeleteRecords
+- [ ] InitProducerId
+- [ ] OffsetForLeaderEpoch
+- [ ] AddPartitionsToTxn
+- [ ] AddOffsetsToTxn
+- [ ] EndTxn
+- [ ] WriteTxnMarkers
+- [ ] TxnOffsetCommit
+- [ ] DescribeAcls
+- [ ] CreateAcls
+- [ ] DeleteAcls
+- [ ] DescribeConfigs
+- [ ] AlterConfigs
+- [ ] AlterReplicaLogDirs
+- [ ] DescribeLogDirs
+- [ ] SaslAuthenticate
+- [ ] CreatePartitions
+- [ ] CreateDelegationToken	
+- [ ] RenewDelegationToken
+- [ ] ExpireDelegationToken
+- [ ] DescribeDelegationToken
+- [ ] DeleteGroups
+- [ ] ElectLeaders
+- [ ] IncrementalAlterConfigs
+- [ ] AlterPartitionReassignments
+- [ ] ListPartitionReassignments
+- [ ] OffsetDelete
+- [ ] DescribeClientQuotas
+- [ ] AlterClientQuotas
+- [ ] DescribeUserScramCredentials
+- [ ] AlterUserScramCredentials
+- [ ] DescribeQuorum
+- [ ] AlterPartition
+- [ ] UpdateFeatures
+- [ ] Envelope
+- [ ] DescribeCluster
+- [ ] DescribeProducers
+- [ ] UnregisterBroker
+- [ ] DescribeTransactions
+- [ ] ListTransactions
+- [ ] AllocateProducerIds
+- [ ] ConsumerGroupHeartbeat
+- [ ] ConsumerGroupDescribe
+- [ ] GetTelemetrySubscriptions
+- [ ] PushTelemetry
+- [ ] ListClientMetricsResources

@@ -1,0 +1,61 @@
+{
+    "name": "kafkiansky/kratos",
+    "description": "Async (based on amphp) PHP client for Apache Kafka.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "async",
+        "amphp",
+        "kafka"
+    ],
+    "authors": [
+        {
+            "name": "kafkiansky",
+            "email": "vadimzanfir@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">= 8.3",
+        "amphp/socket": "^2.3",
+        "azjezz/psl": "^2.9",
+        "kafkiansky/binary": "^0.3.0"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.42",
+        "phpstan/phpstan": "^1.10",
+        "phpunit/phpunit": "^11.1",
+        "squizlabs/php_codesniffer": "^3.9",
+        "symfony/var-dumper": "^7.0"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Kafkiansky\\Kratos\\": "src/"
+        },
+        "files": [
+            "src/Internal/Protocol/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kafkiansky\\Kratos\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "phpcbf": "./vendor/bin/phpcbf -p --standard=phpcs.xml src",
+        "phpcs": "./vendor/bin/phpcs --standard=phpcs.xml",
+        "phpstan": "./vendor/bin/phpstan analyse",
+        "phpunit": "./vendor/bin/phpunit --testdox --do-not-cache",
+        "test": [
+            "@phpunit",
+            "@phpstan",
+            "@phpcs"
+        ]
+    }
+}
