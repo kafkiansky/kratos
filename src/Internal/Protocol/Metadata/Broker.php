@@ -7,7 +7,7 @@ namespace Kafkiansky\Kratos\Internal\Protocol\Metadata;
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
 use Kafkiansky\Kratos\Internal\Protocol\Buffer;
 
-final readonly class Broker
+final readonly class Broker implements \Stringable
 {
     public function __construct(
         public int $nodeId,
@@ -47,5 +47,13 @@ final readonly class Broker
             $port,
             $rack,
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString(): string
+    {
+        return "tcp://$this->host:$this->port";
     }
 }

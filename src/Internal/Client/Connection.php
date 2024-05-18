@@ -40,44 +40,6 @@ final class Connection
     }
 
     /**
-     * @return Future<Protocol\ApiVersions\ApiVersionsResponse>
-     *
-     * @throws \Kafkiansky\Binary\BinaryException
-     * @throws \Amp\ByteStream\StreamException
-     */
-    public function apiVersions(
-        ?string $clientSoftwareName = null,
-        ?string $clientSoftwareVersion = null,
-    ): Future {
-        return $this->writeRequest(
-            new Protocol\ApiVersions\ApiVersionsRequest($clientSoftwareName, $clientSoftwareVersion),
-            Protocol\ApiVersion::V3,
-        );
-    }
-
-    /**
-     * @param non-empty-string[] $topics
-     *
-     * @return Future<Protocol\Metadata\MetadataResponse>
-     *
-     * @throws \Kafkiansky\Binary\BinaryException
-     * @throws \Amp\ByteStream\StreamException
-     */
-    public function fetchMetadata(
-        Protocol\ApiVersion $version,
-        array $topics = [],
-        bool $allowTopicAutoCreation = false,
-    ): Future {
-        return $this->writeRequest(
-            new Protocol\Metadata\MetadataRequest(
-                $topics,
-                $allowTopicAutoCreation,
-            ),
-            $version,
-        );
-    }
-
-    /**
      * @template T of Protocol\Response
      *
      * @param Protocol\Request<T> $request
@@ -87,7 +49,7 @@ final class Connection
      *
      * @return Future<T>
      */
-    private function writeRequest(Protocol\Request $request, Protocol\ApiVersion $version): Future
+    public function request(Protocol\Request $request, Protocol\ApiVersion $version): Future
     {
         $correlationId = $this->correlationIdGenerator->next();
 

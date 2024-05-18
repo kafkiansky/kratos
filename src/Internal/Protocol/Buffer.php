@@ -107,6 +107,45 @@ final readonly class Buffer
         return $this;
     }
 
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     *
+     * @param array<TKey, TValue>                $items
+     * @param callable(self, TKey, TValue): void $writer
+     * @param ?callable(int): void               $writeLength
+     */
+    public function writeMap(array $items, callable $writer, ?callable $writeLength = null): self
+    {
+        $writeLength ??= $this->writeArrayLength(...);
+        $writeLength(\count($items));
+
+        foreach ($items as $key => $value) {
+            $writer($this, $key, $value);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @template T
+     *
+     * @param T[]                     $items
+     * @param callable(self, T): void $writer
+     * @param ?callable(int): void    $writeLength
+     */
+    public function writeArray(array $items, callable $writer, ?callable $writeLength = null): self
+    {
+        $writeLength ??= $this->writeArrayLength(...);
+        $writeLength(\count($items));
+
+        foreach ($items as $item) {
+            $writer($this, $item);
+        }
+
+        return $this;
+    }
+
     public function writeApiKey(ApiKey $apiKey): self
     {
         $this->writeInt16($apiKey->value);
@@ -138,6 +177,18 @@ final readonly class Buffer
     public function writeString(?string $value = null): self
     {
         $value ??= '';
+
+        return $this
+            ->writeInt16(\strlen($value))
+            ->write($value)
+            ;
+    }
+
+    public function writeNullableString(?string $value = null): self
+    {
+        if (null === $value) {
+            return $this->writeInt16(-1);
+        }
 
         return $this
             ->writeInt16(\strlen($value))
@@ -315,7 +366,13 @@ final readonly class Buffer
         $len = $this->consumeUint32();
 
         for ($i = 0; $i < $len; ++$i) {
-            yield $read($this);
+            $value = $read($this);
+
+            if ($value instanceof \Generator) {
+                yield from $value;
+            } else {
+                yield $value;
+            }
         }
     }
 
@@ -336,7 +393,6 @@ final readonly class Buffer
             yield $read($this);
         }
     }
-
 
     /**
      * @throws \Kafkiansky\Binary\BinaryException

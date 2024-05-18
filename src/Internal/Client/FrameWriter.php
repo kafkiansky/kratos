@@ -8,9 +8,7 @@ use Amp\Socket\Socket;
 use Kafkiansky\Binary\BinaryException;
 use Kafkiansky\Kratos\Internal\Protocol;
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
-use Kafkiansky\Kratos\Internal\Protocol\ApiVersions\ApiVersionsRequest;
 use Kafkiansky\Kratos\Internal\Protocol\Buffer;
-use Kafkiansky\Kratos\Internal\Protocol\Metadata\MetadataRequest;
 use Kafkiansky\Kratos\Internal\Protocol\Request;
 
 /**
@@ -84,14 +82,15 @@ final readonly class FrameWriter
     private static function headerVersion(string $request, ApiVersion $version): ApiVersion
     {
         return match ($request) {
-            MetadataRequest::class => match (true) {
+            Protocol\Metadata\MetadataRequest::class => match (true) {
                 $version->gte(ApiVersion::V9) => ApiVersion::V2,
                 default => ApiVersion::V1,
             },
-            ApiVersionsRequest::class => match (true) {
+            Protocol\ApiVersions\ApiVersionsRequest::class => match (true) {
                 $version->gte(ApiVersion::V3) => ApiVersion::V2,
                 default => ApiVersion::V1,
             },
+            Protocol\CreateTopics\CreateTopicsRequest::class, Protocol\DeleteTopics\DeleteTopicsRequest::class => ApiVersion::V1,
             default => $version,
         };
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kafkiansky\Kratos\Tests\Client;
 
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
+use Kafkiansky\Kratos\Internal\Protocol\Command;
 use Kafkiansky\Kratos\Internal\Protocol\Error;
 use Kafkiansky\Kratos\Internal\Protocol\Metadata\Broker;
 use Kafkiansky\Kratos\Internal\Protocol\Metadata\MetadataRequest;
@@ -72,7 +73,7 @@ final class MetadataTest extends ConnectionTestCase
 
         self::assertEquals(
             $response,
-            $connection->fetchMetadata($version)->await(),
+            $connection->request(Command::fetchMetadata(), $version)->await(),
         );
     }
 }

@@ -22,8 +22,8 @@ Async (based on amphp) PHP client for Apache Kafka. Now it is under heavy develo
 - [ ] ListGroups
 - [ ] SaslHandshake
 - [x] ApiVersions
-- [ ] CreateTopics
-- [ ] DeleteTopics
+- [x] CreateTopics
+- [x] DeleteTopics
 - [ ] DeleteRecords
 - [ ] InitProducerId
 - [ ] OffsetForLeaderEpoch

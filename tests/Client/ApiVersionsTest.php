@@ -9,6 +9,7 @@ use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersions\ApiVersionRange;
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersions\ApiVersionsRequest;
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersions\ApiVersionsResponse;
+use Kafkiansky\Kratos\Internal\Protocol\Command;
 use Kafkiansky\Kratos\Internal\Protocol\Error;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -344,7 +345,7 @@ final class ApiVersionsTest extends ConnectionTestCase
 
         self::assertEquals(
             $response,
-            $connection->apiVersions()->await(),
+            $connection->request(Command::apiVersions(), $version)->await(),
         );
     }
 }

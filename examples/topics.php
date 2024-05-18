@@ -15,11 +15,11 @@ $connector = new RetrySocketConnector(
     ),
 );
 
-$socket = $connector->connect('tcp://broker0:9092');
-
-$connection = new Kratos\Internal\Client\Connection($socket);
-
-var_dump(
-    $connection->fetchMetadata(Kratos\Internal\Protocol\ApiVersion::V0)->await(),
+$cluster = Kratos\Cluster::fromConnectionOptions(
+    new Kratos\ConnectionOptions(
+        ['tcp://broker0:9092', 'tcp://broker1:9092'],
+        connector: $connector->connect(...),
+    ),
 );
 
+$cluster->controller()->deleteTopics(['events']);
