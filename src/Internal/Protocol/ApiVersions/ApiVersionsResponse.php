@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Kafkiansky\Kratos\Internal\Protocol\ApiVersions;
 
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
-use Kafkiansky\Kratos\Internal\Protocol\Buffer;
+use Kafkiansky\Kratos\Internal\Protocol\ReadBuffer;
 use Kafkiansky\Kratos\Internal\Protocol\Error;
 use Kafkiansky\Kratos\Internal\Protocol\Response;
 
 /**
+ * @see https://kafka.apache.org/protocol.html#The_Messages_ApiVersions
+ *
  * @template-implements \IteratorAggregate<array-key, ApiVersionRange>
  */
 final readonly class ApiVersionsResponse implements
@@ -30,13 +32,13 @@ final readonly class ApiVersionsResponse implements
     /**
      * {@inheritdoc}
      */
-    public static function read(Buffer $buffer, ApiVersion $version): self
+    public static function read(ReadBuffer $buffer, ApiVersion $version): self
     {
-        $error = $buffer->readError();
+        $error = $buffer->consumeError();
 
         $keysCount = match (true) {
-            $version->gte(ApiVersion::V3) => $buffer->readCompactArrayLength(),
-            default => $buffer->readArrayLength(),
+            $version->gte(new ApiVersion(3)) => $buffer->consumeCompactArrayLength(),
+            default => $buffer->consumeArrayLength(),
         };
 
         $keys = [];
@@ -45,12 +47,12 @@ final readonly class ApiVersionsResponse implements
         }
 
         $throttleTimeInMs = null;
-        if ($version->gte(ApiVersion::V1)) {
+        if ($version->gte(new ApiVersion(1))) {
             $throttleTimeInMs = $buffer->consumeInt32();
         }
 
-        if ($version->gte(ApiVersion::V3)) {
-            $buffer->readEmptyTaggedFieldArray();
+        if ($version->gte(new ApiVersion(3))) {
+            $buffer->consumeEmptyTaggedFieldArray();
         }
 
         return new self(

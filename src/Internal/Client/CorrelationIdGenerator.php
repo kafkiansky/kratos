@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kafkiansky\Kratos\Internal\Client;
 
 /**
- * @phpstan-type CorrelationId = int<0, 4294967294>
+ * @phpstan-type CorrelationId = int<0, 4294967295>
  */
 final class CorrelationIdGenerator
 {

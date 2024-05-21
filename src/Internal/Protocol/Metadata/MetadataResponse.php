@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Kafkiansky\Kratos\Internal\Protocol\Metadata;
 
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
-use Kafkiansky\Kratos\Internal\Protocol\Buffer;
+use Kafkiansky\Kratos\Internal\Protocol\ReadBuffer;
 use Kafkiansky\Kratos\Internal\Protocol\Response;
 
+/**
+ * @see https://kafka.apache.org/protocol.html#The_Messages_Metadata
+ */
 final readonly class MetadataResponse implements Response
 {
     /**
@@ -27,16 +30,16 @@ final readonly class MetadataResponse implements Response
     /**
      * {@inheritdoc}
      */
-    public static function read(Buffer $buffer, ApiVersion $version): self
+    public static function read(ReadBuffer $buffer, ApiVersion $version): self
     {
         $throttleTimeInMs = match (true) {
-            $version->gte(ApiVersion::V3) => $buffer->consumeInt32(),
+            $version->gte(new ApiVersion(3)) => $buffer->consumeInt32(),
             default => null,
         };
 
         $brokersCount = match (true) {
-            $version->less(ApiVersion::V9) => $buffer->readArrayLength(),
-            default => $buffer->readCompactArrayLength(),
+            $version->less(new ApiVersion(9)) => $buffer->consumeArrayLength(),
+            default => $buffer->consumeCompactArrayLength(),
         };
 
         /** @var Broker[] $brokers */
@@ -47,21 +50,21 @@ final readonly class MetadataResponse implements Response
         }
 
         $clusterId = match (true) {
-            $version->gte(ApiVersion::V2) => match (true) {
-                $version->less(ApiVersion::V9) => $buffer->consumeString(),
+            $version->gte(new ApiVersion(2)) => match (true) {
+                $version->less(new ApiVersion(9)) => $buffer->consumeString(),
                 default => $buffer->consumeCompactString(),
             },
             default => null,
         };
 
         $controllerId = match (true) {
-            $version->gte(ApiVersion::V1) => $buffer->consumeInt32(),
+            $version->gte(new ApiVersion(1)) => $buffer->consumeInt32(),
             default => null,
         };
 
         $topicsCount = match (true) {
-            $version->less(ApiVersion::V9) => $buffer->readArrayLength(),
-            default => $buffer->readCompactArrayLength(),
+            $version->less(new ApiVersion(9)) => $buffer->consumeArrayLength(),
+            default => $buffer->consumeCompactArrayLength(),
         };
 
         /** @var TopicMetadata[] $topics */
@@ -72,12 +75,12 @@ final readonly class MetadataResponse implements Response
         }
 
         $clusterAuthorizedOperations = match (true) {
-            $version->gte(ApiVersion::V8) => $buffer->consumeInt32(),
+            $version->gte(new ApiVersion(8)) => $buffer->consumeInt32(),
             default => null,
         };
 
-        if ($version->gte(ApiVersion::V9)) {
-            $buffer->readEmptyTaggedFieldArray();
+        if ($version->gte(new ApiVersion(9))) {
+            $buffer->consumeEmptyTaggedFieldArray();
         }
 
         return new self(

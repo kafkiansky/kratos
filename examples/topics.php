@@ -8,6 +8,9 @@ use Amp\Socket\RetrySocketConnector;
 use Kafkiansky\Kratos;
 
 require __DIR__ . '/../vendor/autoload.php';
+$size = 10;
+$size = 2;
+dd($size);
 
 $connector = new RetrySocketConnector(
     new DnsSocketConnector(

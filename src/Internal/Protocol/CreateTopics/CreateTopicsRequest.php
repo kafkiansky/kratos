@@ -6,8 +6,8 @@ namespace Kafkiansky\Kratos\Internal\Protocol\CreateTopics;
 
 use Kafkiansky\Kratos\Internal\Protocol\ApiKey;
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
-use Kafkiansky\Kratos\Internal\Protocol\Buffer;
 use Kafkiansky\Kratos\Internal\Protocol\Request;
+use Kafkiansky\Kratos\Internal\Protocol\WriteBuffer;
 
 /**
  * @see https://kafka.apache.org/protocol.html#The_Messages_CreateTopics
@@ -40,23 +40,23 @@ final readonly class CreateTopicsRequest implements Request
         return CreateTopicsResponse::class;
     }
 
-    public function write(Buffer $buffer, ApiVersion $version): void
+    public function write(WriteBuffer $buffer, ApiVersion $version): void
     {
         $buffer
-            ->writeMap($this->topics, function (Buffer $buffer, string $name, TopicDetail $detail): void {
+            ->writeMap($this->topics, function (WriteBuffer $buffer, string $name, TopicDetail $detail): void {
                 $buffer
                     ->writeString($name)
                     ->writeInt32($detail->numPartitions)
                     ->writeInt16($detail->replicationFactor)
-                    ->writeMap($detail->assignments, static function (Buffer $buffer, int $partition, array $assignments): void {
+                    ->writeMap($detail->assignments, static function (WriteBuffer $buffer, int $partition, array $assignments): void {
                         $buffer
                             ->writeInt32($partition)
-                            ->writeArray($assignments, static function (Buffer $buffer, int $assignment): void {
+                            ->writeArray($assignments, static function (WriteBuffer $buffer, int $assignment): void {
                                 $buffer->writeInt32($assignment);
                             })
                         ;
                     })
-                    ->writeMap($detail->configs, static function (Buffer $buffer, string $configKey, ?string $configValue): void {
+                    ->writeMap($detail->configs, static function (WriteBuffer $buffer, string $configKey, ?string $configValue): void {
                         $buffer
                             ->writeString($configKey)
                             ->writeNullableString($configValue)
@@ -67,7 +67,7 @@ final readonly class CreateTopicsRequest implements Request
             ->writeInt32($this->timeout)
         ;
 
-        if ($version->gte(ApiVersion::V1)) {
+        if ($version->gte(new ApiVersion(1))) {
             $buffer->writeBool($this->validateOnly);
         }
     }

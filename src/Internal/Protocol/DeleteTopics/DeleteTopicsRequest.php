@@ -6,8 +6,8 @@ namespace Kafkiansky\Kratos\Internal\Protocol\DeleteTopics;
 
 use Kafkiansky\Kratos\Internal\Protocol\ApiKey;
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
-use Kafkiansky\Kratos\Internal\Protocol\Buffer;
 use Kafkiansky\Kratos\Internal\Protocol\Request;
+use Kafkiansky\Kratos\Internal\Protocol\WriteBuffer;
 
 /**
  * @see https://kafka.apache.org/protocol.html#The_Messages_DeleteTopics
@@ -39,10 +39,10 @@ final readonly class DeleteTopicsRequest implements Request
         return DeleteTopicsResponse::class;
     }
 
-    public function write(Buffer $buffer, ApiVersion $version): void
+    public function write(WriteBuffer $buffer, ApiVersion $version): void
     {
         $buffer
-            ->writeArray($this->topics, static function (Buffer $buffer, string $topic): void {
+            ->writeArray($this->topics, static function (WriteBuffer $buffer, string $topic): void {
                 $buffer->writeString($topic);
             })
             ->writeInt32($this->timeout)

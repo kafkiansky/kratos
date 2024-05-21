@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kafkiansky\Kratos\Internal\Protocol\Metadata;
 
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
-use Kafkiansky\Kratos\Internal\Protocol\Buffer;
 use Kafkiansky\Kratos\Internal\Protocol\Error;
+use Kafkiansky\Kratos\Internal\Protocol\ReadBuffer;
 
 final readonly class TopicMetadata
 {
@@ -26,28 +26,28 @@ final readonly class TopicMetadata
     /**
      * @throws \Kafkiansky\Binary\BinaryException
      */
-    public static function fromBuffer(Buffer $buffer, ApiVersion $version): self
+    public static function fromBuffer(ReadBuffer $buffer, ApiVersion $version): self
     {
-        $error = $buffer->readError();
+        $error = $buffer->consumeError();
 
         $name = match (true) {
-            $version->less(ApiVersion::V9) => $buffer->consumeString(),
+            $version->less(new ApiVersion(9)) => $buffer->consumeString(),
             default => $buffer->consumeCompactString(),
         };
 
         $uuid = match (true) {
-            $version->gte(ApiVersion::V10) => $buffer->consumeBytes(16),
+            $version->gte(new ApiVersion(10)) => $buffer->consumeBytes(16),
             default => null,
         };
 
         $isInternal = match (true) {
-            $version->gte(ApiVersion::V1) => $buffer->consumeBool(),
+            $version->gte(new ApiVersion(1)) => $buffer->consumeBool(),
             default => false,
         };
 
         $partitionsCount = match (true) {
-            $version->less(ApiVersion::V9) => $buffer->readArrayLength(),
-            default => $buffer->readCompactArrayLength(),
+            $version->less(new ApiVersion(9)) => $buffer->consumeArrayLength(),
+            default => $buffer->consumeCompactArrayLength(),
         };
 
         /** @var PartitionMetadata[] $partitions */
@@ -58,12 +58,12 @@ final readonly class TopicMetadata
         }
 
         $topicAuthorizedOperations = match (true) {
-            $version->gte(ApiVersion::V8) => $buffer->consumeInt32(),
+            $version->gte(new ApiVersion(8)) => $buffer->consumeInt32(),
             default => null,
         };
 
-        if ($version->gte(ApiVersion::V9)) {
-            $buffer->readEmptyTaggedFieldArray();
+        if ($version->gte(new ApiVersion(9))) {
+            $buffer->consumeEmptyTaggedFieldArray();
         }
 
         return new self(

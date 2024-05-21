@@ -47,11 +47,11 @@ final readonly class FrameWriter
 
         $headerVersion = self::headerVersion($request::class, $version);
 
-        if ($headerVersion->gte(ApiVersion::V1)) {
+        if ($headerVersion->gte(new ApiVersion(1))) {
             $buffer->writeString($this->clientId);
         }
 
-        if ($headerVersion->gte(ApiVersion::V2)) {
+        if ($headerVersion->gte(new ApiVersion(2))) {
             $buffer->writeEmptyTaggedFieldArray();
         }
 
@@ -83,14 +83,14 @@ final readonly class FrameWriter
     {
         return match ($request) {
             Protocol\Metadata\MetadataRequest::class => match (true) {
-                $version->gte(ApiVersion::V9) => ApiVersion::V2,
-                default => ApiVersion::V1,
+                $version->gte(new ApiVersion(9)) => new ApiVersion(2),
+                default => new ApiVersion(1),
             },
             Protocol\ApiVersions\ApiVersionsRequest::class => match (true) {
-                $version->gte(ApiVersion::V3) => ApiVersion::V2,
-                default => ApiVersion::V1,
+                $version->gte(new ApiVersion(3)) => new ApiVersion(2),
+                default => new ApiVersion(1),
             },
-            Protocol\CreateTopics\CreateTopicsRequest::class, Protocol\DeleteTopics\DeleteTopicsRequest::class => ApiVersion::V1,
+            Protocol\CreateTopics\CreateTopicsRequest::class, Protocol\DeleteTopics\DeleteTopicsRequest::class => new ApiVersion(1),
             default => $version,
         };
     }

@@ -38,7 +38,7 @@ function parseBytes(string $path): string
             \str_replace(
                 [' ', \PHP_EOL],
                 '',
-                \file_get_contents($path),
+                Type\string()->assert(\file_get_contents($path)),
             ),
         ),
     );

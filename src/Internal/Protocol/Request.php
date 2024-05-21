@@ -7,8 +7,10 @@ namespace Kafkiansky\Kratos\Internal\Protocol;
 /**
  * @template R of Response
  */
-interface Request extends WriteBytes
+interface Request
 {
+    public function write(WriteBuffer $buffer, ApiVersion $version): void;
+
     public static function apiKey(): ApiKey;
 
     /**

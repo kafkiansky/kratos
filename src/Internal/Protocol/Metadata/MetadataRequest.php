@@ -8,6 +8,7 @@ use Kafkiansky\Kratos\Internal\Protocol\ApiKey;
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
 use Kafkiansky\Kratos\Internal\Protocol\Buffer;
 use Kafkiansky\Kratos\Internal\Protocol\Request;
+use Kafkiansky\Kratos\Internal\Protocol\WriteBuffer;
 
 /**
  * @see https://kafka.apache.org/protocol.html#The_Messages_Metadata
@@ -30,16 +31,16 @@ final readonly class MetadataRequest implements Request
     ) {
     }
 
-    public function write(Buffer $buffer, ApiVersion $version): void
+    public function write(WriteBuffer $buffer, ApiVersion $version): void
     {
-        if ($version === ApiVersion::V0 || \count($this->topics) > 0) {
-            if ($version->less(ApiVersion::V9)) {
+        if ($version->equals(new ApiVersion(0)) || \count($this->topics) > 0) {
+            if ($version->less(new ApiVersion(9))) {
                 $buffer->writeArrayLength(\count($this->topics));
 
                 foreach ($this->topics as $topic) {
                     $buffer->writeString($topic);
                 }
-            } elseif ($version->equals(ApiVersion::V9)) {
+            } elseif ($version->equals(new ApiVersion(9))) {
                 $buffer->writeCompactArrayLength(\count($this->topics));
 
                 foreach ($this->topics as $topic) {
@@ -53,32 +54,32 @@ final readonly class MetadataRequest implements Request
 
                 foreach ($this->topics as $topic) {
                     $buffer
-                        ->write(\implode(array: self::NULL_UUID))
+                        ->write(\implode('', self::NULL_UUID))
                         ->writeNullableCompactString($topic)
                         ->writeEmptyTaggedFieldArray()
                     ;
                 }
             }
         } else {
-            if ($version->less(ApiVersion::V9)) {
+            if ($version->less(new ApiVersion(9))) {
                 $buffer->writeInt32(-1);
             } else {
                 $buffer->writeCompactArrayLength(-1);
             }
         }
 
-        if ($version->greater(ApiVersion::V3)) {
+        if ($version->greater(new ApiVersion(3))) {
             $buffer->writeBool($this->allowTopicAutoCreation);
         }
 
-        if ($version->greater(ApiVersion::V7)) {
+        if ($version->greater(new ApiVersion(7))) {
             $buffer
                 ->writeBool($this->includeClusterAuthorizedOperations)
                 ->writeBool($this->includeTopicAuthorizedOperations)
             ;
         }
 
-        if ($version->greater(ApiVersion::V8)) {
+        if ($version->greater(new ApiVersion(8))) {
             $buffer->writeEmptyTaggedFieldArray();
         }
     }

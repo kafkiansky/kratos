@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Kafkiansky\Kratos\Internal\Protocol;
 
-interface Response extends ReadBytes
+use Kafkiansky\Binary\BinaryException;
+
+interface Response
 {
+    /**
+     * @throws BinaryException
+     */
+    public static function read(ReadBuffer $buffer, ApiVersion $version): self;
 }

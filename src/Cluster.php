@@ -24,7 +24,8 @@ final class Cluster
 
     private function __construct(
         private readonly ConnectionOptions $connectionOptions,
-    ) {}
+    ) {
+    }
 
     public static function fromConnectionOptions(ConnectionOptions $connectionOptions): self
     {
@@ -46,13 +47,13 @@ final class Cluster
         $this->broker ??= self::peekRandomConnection($this->connectionOptions);
 
         /** @var MetadataResponse $metadata */
-        $metadata = $this->broker->request(Command::fetchMetadata(), ApiVersion::V1)->await();
+        $metadata = $this->broker->request(Command::fetchMetadata(), new ApiVersion(1))->await();
 
         foreach ($metadata->brokers as $broker) {
             if ($metadata->controllerId === $broker->nodeId) {
                 return $this->controller = new Controller(
                     self::connect(
-                        (string) $broker,
+                        $broker->uri(),
                         $this->connectionOptions->connectionTimeout,
                         $this->connectionOptions->connector,
                     ),

@@ -17,9 +17,12 @@ final readonly class Controller
 
     /**
      * @param non-empty-list<non-empty-string> $topics
+     *
+     * @throws \Amp\ByteStream\StreamException
+     * @throws \Kafkiansky\Binary\BinaryException
      */
     public function deleteTopics(array $topics): void
     {
-        $this->connection->request(Command::deleteTopics($topics), ApiVersion::V3)->await();
+        $this->connection->request(Command::deleteTopics($topics), new ApiVersion(3))->await();
     }
 }

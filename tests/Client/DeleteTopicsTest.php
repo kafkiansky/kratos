@@ -16,10 +16,13 @@ use PHPUnit\Framework\Attributes\DataProvider;
 #[CoversClass(DeleteTopicsResponse::class)]
 final class DeleteTopicsTest extends ConnectionTestCase
 {
+    /**
+     * @return iterable<array-key, array{ApiVersion, DeleteTopicsResponse}>
+     */
     public static function fixtures(): iterable
     {
         yield 'v1' => [
-            ApiVersion::V1,
+            new ApiVersion(1),
             new DeleteTopicsResponse(
                 topicErrors: ['events' => Error::NONE],
             ),

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kafkiansky\Kratos\Internal\Protocol\DeleteTopics;
 
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
-use Kafkiansky\Kratos\Internal\Protocol\Buffer;
 use Kafkiansky\Kratos\Internal\Protocol\Error;
+use Kafkiansky\Kratos\Internal\Protocol\ReadBuffer;
 use Kafkiansky\Kratos\Internal\Protocol\Response;
 
 /**
@@ -15,7 +15,7 @@ use Kafkiansky\Kratos\Internal\Protocol\Response;
 final readonly class DeleteTopicsResponse implements Response
 {
     /**
-     * @param array<non-empty-string, Error> $topicErrors
+     * @param array<string, Error> $topicErrors
      */
     public function __construct(
         public ?int $throttleTime = null,
@@ -26,16 +26,16 @@ final readonly class DeleteTopicsResponse implements Response
     /**
      * {@inheritdoc}
      */
-    public static function read(Buffer $buffer, ApiVersion $version): self
+    public static function read(ReadBuffer $buffer, ApiVersion $version): self
     {
         return new self(
             match (true) {
-                $version->gte(ApiVersion::V1) => $buffer->consumeInt32(),
+                $version->gte(new ApiVersion(1)) => $buffer->consumeInt32(),
                 default => null,
             },
             \iterator_to_array(
-                $buffer->consumeArrayIterator(function (Buffer $buffer): \Generator {
-                    yield $buffer->consumeString() => $buffer->readError();
+                $buffer->consumeGenerator(static function (ReadBuffer $buffer): \Generator {
+                    yield $buffer->consumeString() => $buffer->consumeError();
                 }),
             ),
         );

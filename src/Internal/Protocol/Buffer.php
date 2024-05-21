@@ -6,7 +6,9 @@ namespace Kafkiansky\Kratos\Internal\Protocol;
 
 use Kafkiansky\Binary\Endianness;
 
-final readonly class Buffer
+final readonly class Buffer implements
+    WriteBuffer,
+    ReadBuffer
 {
     private function __construct(
         private \Kafkiansky\Binary\Buffer $internal,
@@ -36,6 +38,8 @@ final readonly class Buffer
     }
 
     /**
+     * @param positive-int $size
+     *
      * @throws \Kafkiansky\Binary\BinaryException
      */
     public function cut(int $size): self
@@ -108,12 +112,7 @@ final readonly class Buffer
     }
 
     /**
-     * @template TKey of array-key
-     * @template TValue
-     *
-     * @param array<TKey, TValue>                $items
-     * @param callable(self, TKey, TValue): void $writer
-     * @param ?callable(int): void               $writeLength
+     * {@inheritdoc}
      */
     public function writeMap(array $items, callable $writer, ?callable $writeLength = null): self
     {
@@ -128,11 +127,7 @@ final readonly class Buffer
     }
 
     /**
-     * @template T
-     *
-     * @param T[]                     $items
-     * @param callable(self, T): void $writer
-     * @param ?callable(int): void    $writeLength
+     * {@inheritdoc}
      */
     public function writeArray(array $items, callable $writer, ?callable $writeLength = null): self
     {
@@ -228,7 +223,7 @@ final readonly class Buffer
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
     public function consumeBytes(int $length): string
     {
@@ -244,27 +239,28 @@ final readonly class Buffer
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
     public function consumeString(): string
     {
+        /** @phpstan-var -1|positive-int $length */
         $length = $this->consumeInt16();
 
         return -1 === $length ? '' : $this->internal->consume($length);
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
     public function consumeCompactString(): string
     {
         $length = $this->internal->consumeVarUint() - 1;
 
-        return 0 <= $length ? '' : $this->internal->consume($length);
+        return 0 >= $length ? '' : $this->internal->consume($length);
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
     public function consumeBool(): bool
     {
@@ -274,17 +270,17 @@ final readonly class Buffer
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
-    public function readApiKey(): ApiKey
+    public function consumeApiKey(): ApiKey
     {
         return ApiKey::from($this->consumeUint16());
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
-    public function readCompactArrayLength(): int
+    public function consumeCompactArrayLength(): int
     {
         $n = $this->internal->consumeVarUint();
 
@@ -292,28 +288,31 @@ final readonly class Buffer
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
-    public function readArrayLength(): int
+    public function consumeArrayLength(): int
     {
         return $this->internal->consumeUint32();
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
-    public function readEmptyTaggedFieldArray(): void
+    public function consumeEmptyTaggedFieldArray(): void
     {
         $count = $this->internal->consumeVarUint();
 
         for ($i = 0; $i < $count; $i++) {
             $this->internal->consumeVarUint();
-            $this->internal->consume($this->internal->consumeVarUint());
+            $n = $this->internal->consumeVarUint();
+            if ($n > 0) {
+                $this->internal->consume($n);
+            }
         }
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
     public function consumeInt16(): int
     {
@@ -345,7 +344,7 @@ final readonly class Buffer
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
     public function consumeInt32(): int
     {
@@ -353,37 +352,31 @@ final readonly class Buffer
     }
 
     /**
-     * @template T
-     *
-     * @param callable(Buffer): T $read
-     *
-     * @throws \Kafkiansky\Binary\BinaryException
-     *
-     * @return \Generator<T>
+     * {@inheritdoc}
      */
     public function consumeArrayIterator(callable $read): \Generator
     {
         $len = $this->consumeUint32();
 
         for ($i = 0; $i < $len; ++$i) {
-            $value = $read($this);
-
-            if ($value instanceof \Generator) {
-                yield from $value;
-            } else {
-                yield $value;
-            }
+            yield $read($this);
         }
     }
 
     /**
-     * @template T
-     *
-     * @param callable(Buffer): T $read
-     *
-     * @throws \Kafkiansky\Binary\BinaryException
-     *
-     * @return \Generator<T>
+     * {@inheritdoc}
+     */
+    public function consumeGenerator(callable $read): \Generator
+    {
+        $len = $this->consumeUint32();
+
+        for ($i = 0; $i < $len; ++$i) {
+            yield from $read($this);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function consumeCompactArrayIterator(callable $read): \Generator
     {
@@ -395,9 +388,9 @@ final readonly class Buffer
     }
 
     /**
-     * @throws \Kafkiansky\Binary\BinaryException
+     * {@inheritdoc}
      */
-    public function readError(): Error
+    public function consumeError(): Error
     {
         return Error::tryFrom($this->consumeInt16()) ?: Error::UNKNOWN_SERVER_ERROR;
     }

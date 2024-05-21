@@ -49,7 +49,10 @@ final readonly class FrameReader
             /** @var CorrelationId $correlationId */
             $correlationId = $this->buffer->consumeUint32();
 
-            yield $correlationId => $this->buffer->cut($size - self::RESPONSE_SIZE_IN_BYTES);
+            /** @phpstan-var positive-int $size */
+            $size = $size - self::RESPONSE_SIZE_IN_BYTES;
+
+            yield $correlationId => $this->buffer->cut($size);
         }
     }
 }

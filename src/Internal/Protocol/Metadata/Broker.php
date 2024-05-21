@@ -6,8 +6,9 @@ namespace Kafkiansky\Kratos\Internal\Protocol\Metadata;
 
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
 use Kafkiansky\Kratos\Internal\Protocol\Buffer;
+use Kafkiansky\Kratos\Internal\Protocol\ReadBuffer;
 
-final readonly class Broker implements \Stringable
+final readonly class Broker
 {
     public function __construct(
         public int $nodeId,
@@ -20,25 +21,25 @@ final readonly class Broker implements \Stringable
     /**
      * @throws \Kafkiansky\Binary\BinaryException
      */
-    public static function fromBuffer(Buffer $buffer, ApiVersion $version): self
+    public static function fromBuffer(ReadBuffer $buffer, ApiVersion $version): self
     {
         $nodeId = $buffer->consumeInt32();
 
         $host = match (true) {
-            $version->less(ApiVersion::V9) => $buffer->consumeString(),
+            $version->less(new ApiVersion(9)) => $buffer->consumeString(),
             default => $buffer->consumeCompactString(),
         };
 
         $port = $buffer->consumeInt32();
 
         $rack = match (true) {
-            $version->gte(ApiVersion::V1) && $version->less(ApiVersion::V9) => $buffer->consumeString(),
-            $version->gte(ApiVersion::V9) => $buffer->consumeCompactString(),
+            $version->gte(new ApiVersion(1)) && $version->less(new ApiVersion(9)) => $buffer->consumeString(),
+            $version->gte(new ApiVersion(9)) => $buffer->consumeCompactString(),
             default => null,
         };
 
-        if ($version->gte(ApiVersion::V9)) {
-            $buffer->readEmptyTaggedFieldArray();
+        if ($version->gte(new ApiVersion(9))) {
+            $buffer->consumeEmptyTaggedFieldArray();
         }
 
         return new self(
@@ -50,9 +51,9 @@ final readonly class Broker implements \Stringable
     }
 
     /**
-     * {@inheritdoc}
+     * @return non-empty-string
      */
-    public function __toString(): string
+    public function uri(): string
     {
         return "tcp://$this->host:$this->port";
     }

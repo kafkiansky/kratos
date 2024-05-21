@@ -10,7 +10,7 @@ use Amp\Socket\Socket;
 use Psl\Type;
 
 /**
- * @phpstan-type Connector = \Closure(non-empty-string, ?ConnectContext, ?Cancellation): Socket
+ * @phpstan-type Connector = \Closure(non-empty-string, ?ConnectContext, ?Cancellation=): Socket
  *
  * @template-implements \IteratorAggregate<non-empty-string>
  */
@@ -38,13 +38,16 @@ final readonly class ConnectionOptions implements
      */
     public static function fromString(string $hosts, int $connectionTimeout = 10): self
     {
-        return new self(
-            Type\non_empty_vec(Type\non_empty_string())->assert(
-                \array_map(
-                    \trim(...),
-                    \explode(',', $hosts),
-                ),
+        /** @var non-empty-list<non-empty-string> $hosts */
+        $hosts = Type\non_empty_vec(Type\non_empty_string())->assert(
+            \array_map(
+                \trim(...),
+                \explode(',', $hosts),
             ),
+        );
+
+        return new self(
+            $hosts,
             $connectionTimeout,
         );
     }

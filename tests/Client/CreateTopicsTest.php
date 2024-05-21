@@ -18,10 +18,13 @@ use PHPUnit\Framework\Attributes\DataProvider;
 #[CoversClass(CreateTopicsResponse::class)]
 final class CreateTopicsTest extends ConnectionTestCase
 {
+    /**
+     * @return iterable<array-key, array{ApiVersion, CreateTopicsResponse}>
+     */
     public static function fixtures(): iterable
     {
         yield 'v1' => [
-            ApiVersion::V1,
+            new ApiVersion(1),
             new CreateTopicsResponse(
                 topicErrors: [
                     'analytics' => new TopicError(

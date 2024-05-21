@@ -19,10 +19,13 @@ use PHPUnit\Framework\Attributes\DataProvider;
 #[CoversClass(MetadataResponse::class)]
 final class MetadataTest extends ConnectionTestCase
 {
+    /**
+     * @return iterable<array-key, array{ApiVersion, MetadataResponse}>
+     */
     public static function fixtures(): iterable
     {
         yield 'v0' => [
-            ApiVersion::V0,
+            new ApiVersion(0),
             new MetadataResponse(
                 [
                     new Broker(

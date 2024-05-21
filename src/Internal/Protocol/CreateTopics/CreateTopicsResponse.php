@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kafkiansky\Kratos\Internal\Protocol\CreateTopics;
 
 use Kafkiansky\Kratos\Internal\Protocol\ApiVersion;
-use Kafkiansky\Kratos\Internal\Protocol\Buffer;
+use Kafkiansky\Kratos\Internal\Protocol\ReadBuffer;
 use Kafkiansky\Kratos\Internal\Protocol\Response;
 
 /**
@@ -14,7 +14,7 @@ use Kafkiansky\Kratos\Internal\Protocol\Response;
 final readonly class CreateTopicsResponse implements Response
 {
     /**
-     * @param array<non-empty-string, TopicError> $topicErrors
+     * @param array<string, TopicError> $topicErrors
      */
     public function __construct(
         public ?int $throttleTime = null,
@@ -25,17 +25,17 @@ final readonly class CreateTopicsResponse implements Response
     /**
      * {@inheritdoc}
      */
-    public static function read(Buffer $buffer, ApiVersion $version): self
+    public static function read(ReadBuffer $buffer, ApiVersion $version): self
     {
         return new self(
             match (true) {
-                $version->gte(ApiVersion::V2) => $buffer->consumeInt32(),
+                $version->gte(new ApiVersion(2)) => $buffer->consumeInt32(),
                 default => null,
             },
             \iterator_to_array(
-                $buffer->consumeArrayIterator(static function (Buffer $buffer): \Generator {
+                $buffer->consumeGenerator(static function (ReadBuffer $buffer): \Generator {
                     yield $buffer->consumeString() => new TopicError(
-                        $buffer->readError(),
+                        $buffer->consumeError(),
                         $buffer->consumeString(),
                     );
                 }),

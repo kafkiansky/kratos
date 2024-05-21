@@ -7,7 +7,6 @@ namespace Kafkiansky\Kratos\Tests\Client;
 use Amp\Socket\Socket;
 use Kafkiansky\Kratos\Internal\Client\Connection;
 use PHPUnit\Framework\TestCase;
-use Psl\Type;
 use Kafkiansky\Kratos\Internal\Protocol;
 
 abstract class ConnectionTestCase extends TestCase
